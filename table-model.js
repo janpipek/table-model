@@ -329,60 +329,66 @@ TableModel = (function($) {
         return combination;
     }
 
+    var Expression = function(args, evaluateFunction, options = {}) {
+        this.args = args;
+        this.sourceSelection = findExpressionSourceSelection(this);
+        this.evaluate = evaluateFunction;
+        $.extend(this, options);
+    };
+
+    Expression.prototype = {
+        flatten: false
+    };
+
+    var asNumber = function(value) {
+        var number = parseFloat(value);
+        if (number == value) {
+            return number;       
+        } else {
+            return 0;
+        }
+    };
+
     TableModel.expression = {
-        Base : function(args, evaluateFunction, options = {}) {
-            this.args = args;
-            this.sourceSelection = findExpressionSourceSelection(this);
-            this.evaluate = evaluateFunction;
-            $.extend(this, options);
-        },
+        Base : Expression,
 
         sum : function() {
-            return new TableModel.expression.Base(arguments, function(values) {
+            return new Expression(arguments, function(values) {
                 var result = 0;
-                // console.log(values);
                 $.each(values, function(index, value) {
-                    result += parseFloat(value);
+                    result += asNumber(value);
                 });
                 return result;
             }, {
                 flatten: true
             });
+        },
+
+        product : function() {
+            return new Expression(arguments, function(values) {
+                var result = 1;
+                $.each(values, function(index, value) {
+                    result *= asNumber(value);
+                });
+                return result;
+            }, {
+                flatten: true
+            });
+        },        
+
+        countIf : function(selection, value) {
+            return new Expression(arguments, function(values) {
+                var count = 0;
+                var haystack = values[0];
+                var needle = values[1];
+                $.each(haystack, function(index, item) {
+                    if (needle == item) {
+                        count++;
+                    }
+                });
+                return count;
+            });
         }
     }
-
-    TableModel.expression.Base.prototype = {
-        flatten : false
-    }
-
-    /* $.extend(TableModel, {
-        functions : {
-
-
-            // Like Excel function of the same name
-            countIf : function(valueOrCondition) {
-                var condition;
-                if (typeof valueOrCondition == "function") {
-                    condition = valueOrCondition;
-                } else {
-                    condition = function(arg) {
-                        return arg == valueOrCondition;
-                    };
-                }
-
-                return function(args) {
-                    var count = 0;
-                    $.each(args, function(index, arg) { 
-                        if (condition(arg)) {
-                            count++;
-                        }
-                    });
-                    return count;                   
-                }
-            }
-        }
-    });
-*/
-
     return TableModel;
 })(jQuery);
