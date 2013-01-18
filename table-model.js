@@ -148,6 +148,16 @@ TableModel = (function($) {
             }
         },
 
+        listen : function(expression, handler) {
+            var tableModel = this;
+            this.onCellChange(function(row, column) {
+                if (expression.sourceSelection.includes(row, column)) {
+                    var value = evaluate(tableModel, expression);
+                    handler(value);
+                }
+            });            
+        },
+
         onCellChange : function(listener) {
             addListener.call(this, "cell", listener);
         },
