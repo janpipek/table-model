@@ -166,11 +166,21 @@ TableModel = (function($) {
     };
 
     $.extend(TableModel, {
-        bindingMethods : {
+        range : function(top, left, bottom, right) {
+            var indices = [];
+            for (i = top; i < bottom; i++) {
+                for (j = left; j < right; j++) {
+                    indices.push([i, j]);
+                }
+            }
+            return indices;
+        },
+
+        functions : {
             sum : function(args) {
                 var result = 0;
                 $.each(args, function(index, arg) {   
-                    result = result + parseFloat(arg);
+                    result += parseFloat(arg);
                 });
                 return result;
             },
@@ -178,9 +188,31 @@ TableModel = (function($) {
             product : function(args) {
                 var result = 1;
                 $.each(args, function(index, arg) { 
-                    result = result * parseFloat(arg);
+                    result *= parseFloat(arg);
                 });
                 return result;
+            },
+
+            // Like Excel function of the same name
+            countIf : function(valueOrCondition) {
+                var condition;
+                if (typeof valueOrCondition == "function") {
+                    condition = valueOrCondition;
+                } else {
+                    condition = function(arg) {
+                        return arg == valueOrCondition;
+                    };
+                }
+                
+                return function(args) {
+                    var count = 0;
+                    $.each(args, function(index, arg) { 
+                        if (condition(arg)) {
+                            count++;
+                        }
+                    });
+                    return count;                   
+                }
             }
         }
     });

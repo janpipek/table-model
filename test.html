@@ -4,6 +4,7 @@
 	<script type="text/javascript" src="table-model.js"></script>
 </head>
 <body>
+	<h3>Sum &amp; Product</h3>
 	<table border="1" id="my-table">
 		<tr>
 			<th></th>
@@ -41,8 +42,33 @@
 
 			var tableModel = new TableModel($table);
 
-			tableModel.bind(sumIndices, [1, 3], TableModel.bindingMethods.sum, true);	
-			tableModel.bind(productIndices, [2, 3], TableModel.bindingMethods.product, true);
+			tableModel.bind(sumIndices, [1, 3], TableModel.functions.sum, true);	
+			tableModel.bind(productIndices, [2, 3], TableModel.functions.product, true);
+		})
+	</script>
+
+	<h3>countif</h3>
+	<table border="1" id="countif-table">
+		<tbody>
+			<tr>
+				<th>Count of pears</th>
+				<td>pear</td>
+				<td>apple</td>
+				<td>pear</td>
+				<td></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<script>
+		$(function() {
+			var $table = $("table#countif-table");
+			var tableModel = new TableModel($table);
+
+			var pearRange = TableModel.range(0, 1, 1, 4);
+			var isPearFunction = TableModel.functions.countIf("pear");
+
+			tableModel.bind(pearRange, [0, 4], isPearFunction, true);
 		})
 	</script>
 </body>
