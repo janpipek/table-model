@@ -4,62 +4,14 @@
 	<script type="text/javascript" src="table-model.js"></script>
 </head>
 <body>
-	<h3>Sum &amp; Product</h3>
-	<table border="1" id="my-table">
-		<tr>
-			<th></th>
-			<th></th>
-			<th></th>
-			<th>Sum or product</th>
-		</tr>
-
-		<tr>
-			<td><input value="1"/></td>
-			<td><input value="2"/></td>
-			<td>3</td>
-			<td></td>
-		</tr>
-
-		<tr>
-			<td>4</td>
-			<td>5</td>
-			<td>6</td>
-			<td></td>
-		</tr>
-	</table>
-
-	<script>
-		$(function() {
-			var $table = $("#my-table");
-
-			var sumIndices = [];
-			var productIndices = [];
-
-			for (var i = 0; i < 3; i++) {
-				sumIndices.push([1, i]);
-				productIndices.push([2, i]);
-			}
-
-			var tableModel = new TableModel($table);
-			var s = TableModel.select;
-			var e = TableModel.expression;
-
-			tableModel.set(1, 3, e.sum(s.range(1, 0, 1, 2)));
-			tableModel.set(2, 3, e.product(s.cell(1, 0), s.cell(1, 1)));
-
-			// tableModel.bind(sumIndices, [1, 3], TableModel.functions.sum, true);	
-			// tableModel.bind(productIndices, [2, 3], TableModel.functions.product, true);
-		})
-	</script>
-
 	<h3>countif</h3>
 	<table border="1" id="countif-table">
 		<tbody>
 			<tr>
 				<th>Count of pears</th>
 				<td><input value="pear"/></td>
-				<td>apple</td>
-				<td>pear</td>
+				<td><input value="pear"/></td>
+				<td><input value="pear"/></td>
 				<td></td>
 			</tr>
 		</tbody>
@@ -74,11 +26,55 @@
 			var e = TableModel.expression;		
 			
 			tableModel.set(0, 4, e.countIf(s.range(0, 1, 0, 3), "pear"));
+		});
 
-			// var pearRange = TableModel.range(0, 1, 1, 4);
-			// var isPearFunction = TableModel.functions.countIf("pear");
+		$(function() {
+			var $table = $("<table border=1>");
+			var $head = $("<tr>");
 
-			//tableModel.bind(pearRange, [0, 4], isPearFunction, true);
-		})
+			var max = 4;
+			
+			$head.append($("<td>"));
+
+
+			for (var j = 1; j < max; j++) {
+				var $td = $("<td>");
+				$td.append($("<input value='" + j + "'/>"));
+				$head.append($td);
+			}
+			$table.append($head);
+
+			for (var i = 1; i < max; i++) {
+				var $tr = $("<tr>");
+				var $td = $("<td>");
+				$td.append($("<input value='" + i + "'/>"));
+				$tr.append($td);
+
+				for (var j = 1; j < max; j++) {
+					$tr.append($("<td>"));
+				}
+				$table.append($tr);
+			}
+
+			$foot = $("<tr>");
+			$foot.append($("<td colspan=" + (max-1) +">Total sum:</td>"));
+			$foot.append($("<td></td>"));
+
+			$table.append($foot);
+
+			$("body").append("<h3>Editable multiplication table</h3>");
+			$("body").append($table);
+
+			var s = TableModel.select;
+			var e = TableModel.expression;	
+
+			var tableModel = new TableModel($table);
+			for (var i = 1; i < max; i++) {
+				for (var j = 1; j < max; j++) {
+					tableModel.set(i, j, e.product(s.cell(i, 0), s.cell(0, j)));
+				}
+			}
+			tableModel.set(max, 1, e.sum(s.range(1, 1, max-1, max-1)));
+		});	
 	</script>
 </body>
