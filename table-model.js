@@ -49,6 +49,9 @@ TableModel = (function($) {
 
         $table.on("change", "td input, td textarea", function() {
             var $cell = $(this);
+            if (!$cell.is("td, th")) {
+                $cell = $cell.closest("td, th");
+            }
             var row = $cell.data("row");
             var column = $cell.data("column");
             onCellValueChange.call(tableModel, row, column);
@@ -85,6 +88,23 @@ TableModel = (function($) {
         callListeners.call(this, "column", [column]);
     };
 
+    var bindExpression = function(tableModel, cell, row, column, expression) {
+        var selection = expression.sourceSelection
+        var applyHandler = function() {
+            var value = evaluate(tableModel, expression);
+            tableModel.options.setCellValue.call(tableModel, cell, value);
+            onCellValueChange.call(tableModel, row, column);
+        };
+        tableModel.onCellChange(function(row, column) {
+            // console.log("onCellChange: " + row + "," + column);
+            if (expression.sourceSelection.includes(row, column)) {
+                // console.log("we go here");
+                applyHandler();
+            }
+        }); 
+        applyHandler();       
+    };
+
     var defaultOptions = {
         findCell : staticFindCell,
 
@@ -106,21 +126,25 @@ TableModel = (function($) {
 
         get : function(row, column) {
             var cell = this.options.findCell.call(this, row, column);
-            return this.options.readCellValue.call(this, cell);
+            var value = this.options.readCellValue.call(this, cell);
+            return value;
         },
 
         set : function(row, column, value) {
             var cell = this.options.findCell.call(this, row, column);
-            var originalValue = this.options.readCellValue.call(this, cell);
 
-            // console.log("setting " + row + ", " + column + ":" + value);
-
-            if (value !== originalValue) {
-                this.options.setCellValue.call(this, cell, value);
-                onCellValueChange.call(this, row, column);
+            if (isExpression(value)) {
+                bindExpression(this, cell, row, column, value);
                 return true;
             } else {
-                return false;
+                var originalValue = this.options.readCellValue.call(this, cell);
+                if (value !== originalValue) {
+                    this.options.setCellValue.call(this, cell, value);
+                    onCellValueChange.call(this, row, column);
+                    return true;
+                } else {
+                    return false;
+                }
             }
         },
 
@@ -134,64 +158,206 @@ TableModel = (function($) {
 
         onRowChange : function(listener) {
             addListener.call(this, "row", listener);
-        },
-
-        bind : function(sourceIndices, targetIndex, handler, applyImmediately = false) {
-            var tableModel = this;
-
-            var applyHandler = function() {
-                var args = [];
-                for (var index in sourceIndices) {
-                    var pair = sourceIndices[index];
-                    args.push(tableModel.get(pair[0], pair[1]));
-                }
-                var value = handler.call(null, args);
-                tableModel.set(targetIndex[0], targetIndex[1], value);
-            };
-
-            tableModel.onCellChange(function(row, column) {
-                for (var index in sourceIndices) {
-                    var pair = sourceIndices[index];
-                    if (pair[0] == row && pair[1] == column) {
-                        applyHandler();
-                        break;
-                    }
-                }
-            });
-
-            if (applyImmediately) {
-                applyHandler();
-            }
         }
     };
 
-    $.extend(TableModel, {
-        range : function(top, left, bottom, right) {
-            var indices = [];
-            for (i = top; i < bottom; i++) {
-                for (j = left; j < right; j++) {
-                    indices.push([i, j]);
+    /** Selections **/
+    var isSelection = function(arg) {
+        return (arg.all && arg.includes);
+    };
+
+    var asSelection = function(arg) {
+        if (isSelection(arg)) {
+            return arg;
+        } else if ($.isArray(arg)) {
+            var array = arg;
+
+            if ((arg.length == 2) && !$.isArray(arg[0])) {
+                array = [ arg ];
+            }
+
+            var selection = {
+                includes : function(row, column) {
+                    for (var i in array) {
+                        if (array[i][0] == row && array[i][1] == column) {
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                all : function() {
+                    return array;
+                },
+                empty : function() {
+                    return !array.length;
+                }
+            };
+            return selection;
+        } else {
+            console.log("error");
+        }
+    };
+
+    TableModel.select = {
+        empty : function() {
+            var selection = {
+                includes : function() {
+                    return false;
+                },
+                all : function() {
+                    return [];
+                },
+                empty : function() {
+                    return true;
                 }
             }
-            return indices;
         },
 
-        functions : {
-            sum : function(args) {
-                var result = 0;
-                $.each(args, function(index, arg) {   
-                    result += parseFloat(arg);
-                });
-                return result;
-            },
+        cell : function(row, column) {
+            return asSelection([row, column]);
+        },
 
-            product : function(args) {
-                var result = 1;
-                $.each(args, function(index, arg) { 
-                    result *= parseFloat(arg);
+        range : function(top, left, bottom, right) {
+            var selection = {
+                includes : function(row, column) {
+                    result = (
+                        row >= top &&
+                        row <= bottom &&
+                        column >= left &&
+                        column <= right
+                    );
+                    return result;
+                },
+                all : function() {
+                    var indices = [];
+                    for (i = top; i <= bottom; i++) {
+                        for (j = left; j <= right; j++) {
+                            indices.push([i, j]);
+                        }
+                    }
+                    return indices;            
+                },
+                empty : function() {
+                    return !((bottom - top) >= 0 && (right - left) >= 0);
+                }       
+            };
+            return selection;
+        },
+
+        combine : function() {
+            var selections = [];
+
+            if (arguments.length == 1 && $.isArray(arguments[0])) {
+                var args = arguments[0];
+            } else {
+                var args = arguments;
+            }
+
+            $.each(args, function(index, argument) {
+                var selection = asSelection(argument);
+                if (!selection.empty()) {
+                    selections.push(selection);
+                }
+            });
+
+            var selection = {
+                includes : function(row, column) {
+                    for (var index in selections) {
+                        if (selections[index].includes(row, column)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                all : function() {
+                    var indices = [];
+                    for (var index in selections) {
+                        indices = indices.concat(selections[index].all())
+                    }
+                    return indices;
+                },
+                empty : function() {
+                    return !selections.length;
+                }
+            }
+            return selection;
+        }
+    };
+
+    var isExpression = function(arg) {
+        return !!arg.evaluate;
+    }
+
+    var evaluate = function(tableModel, expression) {
+        var values = [];
+        $.each (expression.args, function(index, arg) {
+            var value;
+            if (isExpression(arg)) {
+                value = evaluate(tableModel, exp);
+            } else if (isSelection(arg)) {
+                value = [];
+                $.each(arg.all(), function(i, cellIndex) {
+                    value.push(tableModel.get(cellIndex[0], cellIndex[1]));
+                });
+            } else {
+                value = arg;
+            }
+
+            if (expression.flatten && $.isArray(value)) {
+                values = values.concat(value);
+            } else {
+                values.push(value);
+            }
+        });
+        return expression.evaluate(values);
+    }
+
+    var findExpressionSourceSelection = function(expression) {
+        var selections = [];
+        $.each(expression.args, function(index, arg) {
+            if (isSelection(arg)) {
+                // console.log(arg.all());
+                selections.push(arg);
+            } else if (isExpression(arg)) {
+                var selection = arg.sourceSelection();
+                selections.push(selection);
+            }
+        });
+        if (selections.length == 0) return TableModel.select.empty();
+        if (selections.length == 1) return selections[0];
+        var combination = TableModel.select.combine(selections);
+        return combination;
+    }
+
+    TableModel.expression = {
+        Base : function(args, evaluateFunction, options = {}) {
+            this.args = args;
+            this.sourceSelection = findExpressionSourceSelection(this);
+            this.evaluate = evaluateFunction;
+            $.extend(this, options);
+        },
+
+        sum : function() {
+            return new TableModel.expression.Base(arguments, function(values) {
+                var result = 0;
+                // console.log(values);
+                $.each(values, function(index, value) {
+                    result += parseFloat(value);
                 });
                 return result;
-            },
+            }, {
+                flatten: true
+            });
+        }
+    }
+
+    TableModel.expression.Base.prototype = {
+        flatten : false
+    }
+
+    /* $.extend(TableModel, {
+        functions : {
+
 
             // Like Excel function of the same name
             countIf : function(valueOrCondition) {
@@ -203,7 +369,7 @@ TableModel = (function($) {
                         return arg == valueOrCondition;
                     };
                 }
-                
+
                 return function(args) {
                     var count = 0;
                     $.each(args, function(index, arg) { 
@@ -216,6 +382,7 @@ TableModel = (function($) {
             }
         }
     });
+*/
 
     return TableModel;
 })(jQuery);
