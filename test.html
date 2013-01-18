@@ -1,0 +1,48 @@
+<html>
+<head>
+	<script type="text/javascript" src="jquery-1.8.3.js"></script>
+	<script type="text/javascript" src="table-model.js"></script>
+</head>
+<body>
+	<table border="1" id="my-table">
+		<tr>
+			<th></th>
+			<th></th>
+			<th></th>
+			<th>Sum or product</th>
+		</tr>
+
+		<tr>
+			<td>1</td>
+			<td>2</td>
+			<td>3</td>
+			<td></td>
+		</tr>
+
+		<tr>
+			<td>4</td>
+			<td>5</td>
+			<td>6</td>
+			<td></td>
+		</tr>
+	</table>
+
+	<script>
+		$(function() {
+			var $table = $("#my-table");
+
+			var sumIndices = [];
+			var productIndices = [];
+
+			for (var i = 0; i < 3; i++) {
+				sumIndices.push([1, i]);
+				productIndices.push([2, i]);
+			}
+
+			var tableModel = new TableModel($table);
+
+			tableModel.bind(sumIndices, [1, 3], TableModel.bindingMethods.sum, true);	
+			tableModel.bind(productIndices, [2, 3], TableModel.bindingMethods.product, true);
+		})
+	</script>
+</body>
