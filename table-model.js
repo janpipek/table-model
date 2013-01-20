@@ -1,5 +1,5 @@
 TableModel = (function($) {
-    var TableModel = function($table, options = {}) {
+    var TableModel = function($table, options) {
         this.getTable = function() {
             return $table;    
         };
@@ -339,7 +339,7 @@ TableModel = (function($) {
         return combination;
     }
 
-    var Expression = function(args, evaluateFunction, options = {}) {
+    var Expression = function(args, evaluateFunction, options) {
         this.args = args;
         this.sourceSelection = findExpressionSourceSelection(this);
         this.evaluate = evaluateFunction;
