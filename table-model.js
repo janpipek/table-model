@@ -1,3 +1,8 @@
+/**
+ * Copyright (C) 2013 Jan Pipek (jan.pipek@gmail.com)
+ *
+ * MIT license (see LICENSE.txt)
+ */
 TableModel = (function($) {
     var TableModel = function($table, options) {
         this.getTable = function() {
@@ -124,13 +129,20 @@ TableModel = (function($) {
 
     TableModel.prototype = {
 
-
+        /**
+         * Returns the current value of the cell.
+         *
+         * It does not return underlying expression, just the value.
+         */
         get : function(row, column) {
             var cell = this.options.findCell.call(this, row, column);
             var value = this.options.readCellValue.call(this, cell);
             return value;
         },
 
+        /**
+         * Assign a value or a dynamic expression to the cell.
+         */
         set : function(row, column, value) {
             var cell = this.options.findCell.call(this, row, column);
 
@@ -149,6 +161,15 @@ TableModel = (function($) {
             }
         },
 
+        /**
+         * Adds a listener that calls handler whenever expression
+         * value changes.
+         *
+         * @param expression Expression based on cell values
+        *      (accepts expressions as complicated as cells themselves)
+         * @param handler Function to be called. It should accept new value
+         *     of the expression as parameter.
+         */
         listen : function(expression, handler) {
             var tableModel = this;
             this.onCellChange(function(row, column) {
@@ -210,6 +231,9 @@ TableModel = (function($) {
     };
 
     TableModel.select = {
+        /**
+         * Empty selection.
+         */
         empty : function() {
             var selection = {
                 includes : function() {
@@ -224,10 +248,16 @@ TableModel = (function($) {
             }
         },
 
+        /**
+         * Selection consisting of a single cell.
+         */
         cell : function(row, column) {
             return asSelection([row, column]);
         },
 
+        /**
+         * Selection consisting of a rectangular area.
+         */
         range : function(top, left, bottom, right) {
             var selection = {
                 includes : function(row, column) {
@@ -255,6 +285,9 @@ TableModel = (function($) {
             return selection;
         },
 
+        /**
+         * A combination of selections.
+         */
         combine : function() {
             var selections = [];
 
@@ -351,6 +384,7 @@ TableModel = (function($) {
         flatten: false
     };
 
+
     var asNumber = function(value) {
         var number = parseFloat(value);
         if (number == value) {
@@ -385,7 +419,7 @@ TableModel = (function($) {
             }, {
                 flatten: true
             });
-        },        
+        },
 
         countIf : function(selection, value) {
             return new Expression(arguments, function(values) {
@@ -393,6 +427,7 @@ TableModel = (function($) {
                 var haystack = values[0];
                 var needle = values[1];
                 $.each(haystack, function(index, item) {
+                    // TODO: enable regexps and expressions
                     if (needle == item) {
                         count++;
                     }
@@ -401,5 +436,16 @@ TableModel = (function($) {
             });
         }
     }
+
+    // Make it a jQuery plugin
+    $.fn.tableModel = function(options) {
+        $.each(this, function() {
+            new TableModel($(this), options);
+        });
+        return this;
+    }
+    $.extend($.fn.tableModel, TableModel);
+
     return TableModel;
 })(jQuery);
+

@@ -65,10 +65,11 @@
 			$("body").append("<h3>Editable multiplication table</h3>");
 			$("body").append($table);
 
-			var s = TableModel.select;
-			var e = TableModel.expression;	
+			var s = $.fn.tableModel.select;
+			var e = $.fn.tableModel.expression;	
 
-			var tableModel = new TableModel($table);
+			// Call as plugin methods
+			var tableModel = $table.tableModel().data("tableModel");
 			for (var i = 1; i < max; i++) {
 				for (var j = 1; j < max; j++) {
 					tableModel.set(i, j, e.product(s.cell(i, 0), s.cell(0, j)));
