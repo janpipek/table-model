@@ -3,7 +3,12 @@ TableModel = (function($) {
         this.getTable = function() {
             return $table;    
         };
-        $.extend(this.options, options);
+        this.options = $.extend({}, defaultOptions, options);
+
+        this.cellListeners = [];
+        this.rowListeners = [];
+        this.columnListeners = [];
+
         this.options.wireTableEvents.call(this);
         $table.data("table-model", this);
     };
@@ -35,6 +40,8 @@ TableModel = (function($) {
         var $table = this.getTable();
         var tableModel = this;
 
+        console.log($table);
+
         var rows = getRows($table);
         rows.each(function(rowIndex) {
             var $row = $(this);
@@ -44,7 +51,7 @@ TableModel = (function($) {
                 $cell.addClass("column-" + columnIndex);
                 $cell.data("row", rowIndex);
                 $cell.data("column", columnIndex);
-            })
+            });
         });
 
         $table.on("change", "td input, td textarea", function() {
@@ -116,13 +123,7 @@ TableModel = (function($) {
     };
 
     TableModel.prototype = {
-        options : defaultOptions,
-        
-        cellListeners : [],
 
-        rowListeners : [],
-
-        columnListeners : [],
 
         get : function(row, column) {
             var cell = this.options.findCell.call(this, row, column);
