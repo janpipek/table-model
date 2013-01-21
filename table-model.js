@@ -304,7 +304,7 @@ TableModel = (function($) {
         $.each (expression.args, function(index, arg) {
             var value;
             if (isExpression(arg)) {
-                value = evaluate(tableModel, exp);
+                value = evaluate(tableModel, arg);
             } else if (isSelection(arg)) {
                 value = [];
                 $.each(arg.all(), function(i, cellIndex) {
@@ -330,7 +330,7 @@ TableModel = (function($) {
                 // console.log(arg.all());
                 selections.push(arg);
             } else if (isExpression(arg)) {
-                var selection = arg.sourceSelection();
+                var selection = arg.sourceSelection;
                 selections.push(selection);
             }
         });
