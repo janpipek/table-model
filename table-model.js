@@ -108,9 +108,7 @@ TableModel = (function($) {
             onCellValueChange.call(tableModel, row, column);
         };
         tableModel.onCellChange(function(row, column) {
-            // console.log("onCellChange: " + row + "," + column);
             if (expression.sourceSelection.includes(row, column)) {
-                // console.log("we go here");
                 applyHandler();
             }
         }); 
@@ -148,6 +146,8 @@ TableModel = (function($) {
 
             if (isExpression(value)) {
                 bindExpression(this, cell, row, column, value);
+                // TODO: Before returning true, examine if the value
+                //   really changed.
                 return true;
             } else {
                 var originalValue = this.options.readCellValue.call(this, cell);
@@ -166,7 +166,7 @@ TableModel = (function($) {
          * value changes.
          *
          * @param expression Expression based on cell values
-        *      (accepts expressions as complicated as cells themselves)
+         *     (accepts expressions as complicated as cells themselves)
          * @param handler Function to be called. It should accept new value
          *     of the expression as parameter.
          */
@@ -193,11 +193,21 @@ TableModel = (function($) {
         }
     };
 
-    /** Selections **/
+    /**
+     * Check if argument behaves (duck-typing) like a selection.
+     */
     var isSelection = function(arg) {
         return (arg.all && arg.includes);
     };
 
+    /**
+      * Interpret argument as a selection.
+      *
+      * Proper selections are left as-is.
+      * Arrays of pairs and a single pair are converted
+      *   to a collection of cells.
+      * Otherwise exception is thrown.
+      */
     var asSelection = function(arg) {
         if (isSelection(arg)) {
             return arg;
@@ -226,10 +236,22 @@ TableModel = (function($) {
             };
             return selection;
         } else {
-            console.log("error");
+            throw "asSelection: argument cannot be interpreted as selection";
         }
     };
 
+    /**
+      * Cell selections.
+      *
+      * Selections are collections of cells that:
+      * - know if they are empty (method empty)
+      * - know if they include a specific cell (method includes)
+      * - know all their cells (method all)
+      *
+      * Any two (or more collections) can be combined
+      *     using Table.model.select.combine(selections...)
+      *
+      */ 
     TableModel.select = {
         /**
          * Empty selection.
@@ -257,6 +279,9 @@ TableModel = (function($) {
 
         /**
          * Selection consisting of a rectangular area.
+         *
+         * The coordinates are inclusive,
+         *     e.g. right == left if a single column is selected.
          */
         range : function(top, left, bottom, right) {
             var selection = {
@@ -287,6 +312,9 @@ TableModel = (function($) {
 
         /**
          * A combination of selections.
+         *
+         * Any number of selections or cell [row,column] pairs
+         *     can be supplied.
          */
         combine : function() {
             var selections = [];
@@ -328,10 +356,21 @@ TableModel = (function($) {
         }
     };
 
+    /** 
+     * Check (duck-typing) if argument can be evaluated as expression.
+     */
     var isExpression = function(arg) {
         return !!arg.evaluate;
     }
 
+    /**
+      * Evaluate an expression.
+      *
+      * @param tableModel Model has to be supplied because expressions
+      *     don't store information about able in themselves.
+      * @param expression Evaluate an expression starting with its
+      *     arguments that can be expressions as well.
+      */
     var evaluate = function(tableModel, expression) {
         var values = [];
         $.each (expression.args, function(index, arg) {
@@ -356,6 +395,9 @@ TableModel = (function($) {
         return expression.evaluate(values);
     }
 
+    /**
+     * Find a selection of all cells the expression depends on.
+     */
     var findExpressionSourceSelection = function(expression) {
         var selections = [];
         $.each(expression.args, function(index, arg) {
@@ -373,18 +415,15 @@ TableModel = (function($) {
         return combination;
     }
 
-    var Expression = function(args, evaluateFunction, options) {
-        this.args = args;
-        this.sourceSelection = findExpressionSourceSelection(this);
-        this.evaluate = evaluateFunction;
-        $.extend(this, options);
-    };
-
-    Expression.prototype = {
+    var defaultExpressionOptions = {
         flatten: false
-    };
+    }
 
-
+    /**
+     * Try to convert argument to number.
+     *
+     * Helper function used in expressions.
+     */
     var asNumber = function(value) {
         var number = parseFloat(value);
         if (number == value) {
@@ -392,6 +431,14 @@ TableModel = (function($) {
         } else {
             return 0;
         }
+    };
+
+    var Expression = function(args, evaluateFunction, options) {
+        this.args = args;
+        this.sourceSelection = findExpressionSourceSelection(this);
+        this.evaluate = evaluateFunction;
+        this.options = $.extend({}, defaultExpressionOptions, options);
+        $.extend(this, options);
     };
 
     TableModel.expression = {
