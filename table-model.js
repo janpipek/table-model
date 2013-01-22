@@ -495,6 +495,10 @@ TableModel = (function($) {
         }
     }
 
+    // Shortcuts
+    TableModel.s = TableModel.select;
+    TableModel.e = TableModel.expression;
+
     // Make it a jQuery plugin
     $.fn.tableModel = function(options) {
         $.each(this, function() {
