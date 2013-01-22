@@ -4,7 +4,7 @@
 	<script type="text/javascript" src="table-model.js"></script>
 </head>
 <body>
-	<h3>countif</h3>
+	<h3>countif - works immediately on typing</h3>
 	<table border="1" id="countif-table">
 		<tbody>
 			<tr>
@@ -20,7 +20,7 @@
 	<script>
 		$(function() {
 			var $table = $("table#countif-table");
-			var tableModel = new TableModel($table);
+			var tableModel = new TableModel($table, { recalculateOnType: true });
 
 			var s = TableModel.select;
 			var e = TableModel.expression;		

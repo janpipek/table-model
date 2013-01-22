@@ -60,14 +60,23 @@ TableModel = (function($) {
         });
 
         $table.on("change", "td input, td textarea", function() {
-            var $cell = $(this);
-            if (!$cell.is("td, th")) {
-                $cell = $cell.closest("td, th");
-            }
+            var $input = $(this);
+            var $cell = $input.closest("td, th");
             var row = $cell.data("row");
             var column = $cell.data("column");
+            $cell.data("value", $input.val());
             onCellValueChange.call(tableModel, row, column);
         });
+
+        if (this.options.recalculateOnType) {
+            $table.on("keyup", "td input, td textarea", function() {
+                var $input = $(this);
+                var $cell = $input.closest("td, th");
+                if ($input.val() != $cell.data("value")) {
+                    $input.trigger("change");
+                }
+            });
+        }
     };
 
     var staticFindCell = function(row, column) {
@@ -122,7 +131,9 @@ TableModel = (function($) {
 
         readCellValue : defaultReadCellValue,
 
-        setCellValue : defaultSetCellValue
+        setCellValue : defaultSetCellValue,
+
+        recalculateOnType : false
     };
 
     TableModel.prototype = {
