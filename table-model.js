@@ -191,14 +191,29 @@ TableModel = (function($) {
             });            
         },
 
+        /** 
+          * Register handler, that gets called whenever cell value changes.
+          *
+          * The handler receives two parameters: row and column
+          */
         onCellChange : function(listener) {
             addListener.call(this, "cell", listener);
         },
 
+        /** 
+          * Register handler, that gets called whenever a cell in a column changes.
+          *
+          * The handler receives one parameter: column
+          */
         onColumnChange : function(listener) {
             addListener.call(this, "column", listener);
         },
 
+        /** 
+          * Register handler, that gets called whenever a cell in a row changes.
+          *
+          * The handler receives one paramater: row
+          */
         onRowChange : function(listener) {
             addListener.call(this, "row", listener);
         }
@@ -252,7 +267,7 @@ TableModel = (function($) {
     };
 
     /**
-      * Cell selections.
+      * Namespace of all cell selections.
       *
       * Selections are collections of cells that:
       * - know if they are empty (method empty)
@@ -426,10 +441,6 @@ TableModel = (function($) {
         return combination;
     }
 
-    var defaultExpressionOptions = {
-        flatten: false
-    }
-
     /**
      * Try to convert argument to number.
      *
@@ -444,6 +455,28 @@ TableModel = (function($) {
         }
     };
 
+    /**
+      * Default options for expression constructor.
+      * 
+      * They are overridden using options argument of the constructor.
+      */
+    var defaultExpressionOptions = {
+        flatten: false
+    }
+
+    /**
+      * Base constructor of all expressions.
+      * 
+      * @param args - all arguments passed to 
+      * @param evaluateFunction
+      * @param options - various options
+      *
+      * Options (see defaultExpression options):
+      *   - flatten - when evaluating arguments, make a single array
+      *     out of all argument values (default: false)
+      *
+      * Exported as TableModel.expression.Base.
+      */
     var Expression = function(args, evaluateFunction, options) {
         this.args = args;
         this.sourceSelection = findExpressionSourceSelection(this);
@@ -452,6 +485,12 @@ TableModel = (function($) {
         $.extend(this, options);
     };
 
+    /**
+      * Namespace with all pre-defined expressions.
+      *
+      * Also shortcut as TableModel.e.
+      * If you want to implement a custom expression, use TableModel.expression.Base.
+      */
     TableModel.expression = {
         Base : Expression,
 
