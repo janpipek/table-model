@@ -517,19 +517,19 @@ TableModel = (function($) {
             });
         },
 
-        countIf : function(selection, value) {
-            return new Expression(arguments, function(values) {
+        countIf : function(selection, condition) {
+            return new Expression([selection], function(values) {
                 var count = 0;
-                var haystack = values[0];
-                var needle = values[1];
-                $.each(haystack, function(index, item) {
-                    if (needle instanceof RegExp && item.match(needle)) {
+                $.each(values, function(index, item) {
+                    if (condition instanceof RegExp && item.match(condition)) {
                         count++;
-                    } else if (needle == item) {
+                    } else if (condition == item) {
                         count++;
                     }
                 });
                 return count;
+            }, {
+                flatten: true
             });
         }
     }
