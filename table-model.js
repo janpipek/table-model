@@ -23,7 +23,6 @@ TableModel = (function($) {
     };
 
     var callListeners = function(type, arguments) {
-        // console.log("calling " + type + " listeners");
         var listeners = this[type + "Listeners"];
         for (var index in listeners) {
             listeners[index].apply(null, arguments);
@@ -51,6 +50,7 @@ TableModel = (function($) {
         rows.each(function(rowIndex) {
             var $row = $(this);
             $row.addClass("row-" + rowIndex);
+            $row.data("row", rowIndex);
             $row.children("td, th").each(function(columnIndex) {
                 var $cell = $(this);
                 $cell.addClass("column-" + columnIndex);
@@ -137,7 +137,6 @@ TableModel = (function($) {
     };
 
     TableModel.prototype = {
-
         /**
          * Returns the current value of the cell.
          *
@@ -549,4 +548,3 @@ TableModel = (function($) {
 
     return TableModel;
 })(jQuery);
-
