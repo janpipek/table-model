@@ -69,7 +69,7 @@
 			var e = $.fn.tableModel.expression;	
 
 			// Call as plugin methods
-			var tableModel = $table.tableModel().data("tableModel");
+			var tableModel = $table.tableModel({ precision: 2}).data("tableModel");
 			for (var i = 1; i < max; i++) {
 				for (var j = 1; j < max; j++) {
 					tableModel.set(i, j, e.product(s.cell(i, 0), s.cell(0, j)));

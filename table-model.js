@@ -94,6 +94,9 @@ TableModel = (function($) {
     };   
 
     var defaultSetCellValue = function(cell, value) {
+        if (this.options.precision) {
+            value = value.toFixed(this.options.precision);
+        }
         if (cell.has("input").length) {
             cell.children("input").val(value);
         } else if (cell.has("textarea").length) {
