@@ -31,7 +31,7 @@ TableModel = (function($) {
 
     var getRows = function($table) {
         if ($table.has("thead, tbody")) {
-            var trs = $table.children("thead").children("tr");
+            var trs = $table.children("thead:not(.tableFloatingHeader)").children("tr");
             trs = trs.add($table.children("tbody").children("tr"));
             trs = trs.add($table.children("tfoot").children("tr"));
             return trs;
