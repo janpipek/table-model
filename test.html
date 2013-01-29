@@ -25,7 +25,7 @@
 			var s = TableModel.select;
 			var e = TableModel.expression;		
 			
-			tableModel.set(0, 4, e.countIf(s.range(0, 1, 0, 3), "pear"));
+			tableModel.set(0, 4, e.countIf(s.range(0, 1, 0, 3), /^pears?$/));
 		});
 
 		$(function() {

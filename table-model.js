@@ -523,8 +523,9 @@ TableModel = (function($) {
                 var haystack = values[0];
                 var needle = values[1];
                 $.each(haystack, function(index, item) {
-                    // TODO: enable regexps and expressions
-                    if (needle == item) {
+                    if (needle instanceof RegExp && item.match(needle)) {
+                        count++;
+                    } else if (needle == item) {
                         count++;
                     }
                 });
