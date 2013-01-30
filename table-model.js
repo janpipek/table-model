@@ -84,6 +84,9 @@ TableModel = (function($) {
     };
     
     var defaultReadCellValue = function(cell) {
+        if (cell.data("value") !== undefined) {
+            return cell.data("value");
+        }
         if (cell.has("input").length) {
             return cell.children("input").val();
         } else if (cell.has("textarea").length) {
