@@ -2,8 +2,12 @@ Table model for jQuery
 ======================
 How to create
 -------------
-Two ways:
+As jQuery plugin:
+
 * $("table#id").tableModel();
+
+As standalone constructor:
+
 * var model = new TableModel($("table#id"));
 
 How to bind expressions
