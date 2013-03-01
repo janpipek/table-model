@@ -160,9 +160,16 @@ TableModel = (function($) {
          * It does not return underlying expression, just the value.
          */
         get : function(row, column) {
-            var cell = this.options.findCell.call(this, row, column);
+            var cell = this.getCell.call(this, row, column);
             var value = this.options.readCellValue.call(this, cell);
             return value;
+        },
+
+        /**
+         * Return the cell indexed by row and column.
+         */
+        getCell : function(row, column) {
+            return this.options.findCell.call(this, row, column);
         },
 
         /**
