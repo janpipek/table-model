@@ -563,6 +563,40 @@ TableModel = (function($) {
             }, {
                 flatten: true
             });
+        },
+
+        /**
+         * Map sourcevalues => targetvalues using handler.
+         * 
+         * @param selection Selection or an array of values 
+         * @param function(value, [row, column], tableModel) handler 
+         *   There are no limitation for the handler, it can be a generic function.
+         * @return Array converted values as array
+         *
+         * If the first parameter is a selection, handler
+         * receives row & column parameters as well.
+         */
+        map : function(selection, handler) {
+            return new Expression([selection], function(values) {
+                var result = [];
+                var tableModel = this.tableModel;
+
+                if (isSelection(selection)) {
+                    $.each(selection.all(), function(index, item) {
+                        var row = item[0];
+                        var column = item[1];
+                        var value = tableModel.get(row, column);
+                        result.push(handler(value, tableModel, row, column));
+                    });
+                } else {
+                    $.each(values, function(index, item) {
+                        result.push(handler(item, tableModel));
+                    });
+                }
+                return result;
+            }, {
+                flatten: true
+            });
         }
     }
 

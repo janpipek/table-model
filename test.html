@@ -7,6 +7,7 @@
 	<h3>countif - works immediately on typing</h3>
 	<table border="1" id="countif-table">
 		<tbody>
+
 			<tr>
 				<th>Count of pears</th>
 				<td><input value="pear"/></td>
@@ -28,6 +29,47 @@
 			tableModel.set(0, 4, e.countIf(s.range(0, 1, 0, 3), /^pears?$/));
 		});
 
+	</script>
+
+	<h3>map</h3>
+	<table border="1" id="map-table">
+		<tr>
+			<th>x</th>
+			<th>apples</th>
+			<th>class of the result cell</th>
+		</tr>
+
+		<tr>
+			<td><input type="number" value="1"/></td>
+			<td class="class"></td>
+			<td></td>
+		</tr>
+	</table>
+
+	<script>
+		$(function() {
+			var $table = $("table#map-table");
+			var tableModel = new TableModel($table);
+
+			tableModel.set(1, 1, TableModel.e.map(TableModel.s.cell(1, 0), function(a) {
+				if (a == 1) {
+					return "1 apple";
+				} else if (a === "0" || a === 0 || a === "") {
+					return "0 apples";	
+				} else if (a > 0) {
+					return "" + a + " apples";
+				} else {
+					return "Unknown number of apples";
+				}
+			}));
+
+			tableModel.set(1, 2, TableModel.e.map(TableModel.s.cell(1, 1), function(value, model, row, column) {
+				return model.getCell(row, column).attr("class");
+			}));
+		});
+	</script>
+
+	<script>
 		$(function() {
 			var $table = $("<table border=1>");
 			var $head = $("<tr>");
