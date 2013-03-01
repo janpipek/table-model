@@ -419,8 +419,13 @@ TableModel = (function($) {
       *     don't store information about able in themselves.
       * @param expression Evaluate an expression starting with its
       *     arguments that can be expressions as well.
+      *
+      * It also sets expression.tableModel, so that tableModel
+      * can be use in the expression handler.
       */
     var evaluate = function(tableModel, expression) {
+        expression.tableModel = tableModel;
+
         var values = [];
         $.each (expression.args, function(index, arg) {
             var value;
@@ -490,7 +495,7 @@ TableModel = (function($) {
     /**
       * Base constructor of all expressions.
       * 
-      * @param args - all arguments passed to 
+      * @param args - all arguments passed to the expression
       * @param evaluateFunction
       * @param options - various options
       *
@@ -517,6 +522,9 @@ TableModel = (function($) {
     TableModel.expression = {
         Base : Expression,
 
+        /**
+          * Sum of a selection or values.
+          */
         sum : function() {
             return new Expression(arguments, function(values) {
                 var result = 0;
