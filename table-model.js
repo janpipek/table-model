@@ -1,12 +1,14 @@
 /**
  * Copyright (C) 2013 Jan Pipek (jan.pipek@gmail.com)
  *
+ * See https://github.com/janpipek/table-model
+ *
  * MIT license (see LICENSE.txt)
  */
 TableModel = (function($) {
     var TableModel = function($table, options) {
         this.getTable = function() {
-            return $table;    
+            return $table;
         };
         this.options = $.extend({}, defaultOptions, options);
 
@@ -37,14 +39,14 @@ TableModel = (function($) {
             return trs;
         } else {
             return $table.children("tr");
-        }    
+        }
     };
 
     var staticWireTableEvents = function() {
         var $table = this.getTable();
         var tableModel = this;
 
-        console.log($table);
+        // console.log($table);
 
         var rows = getRows($table);
         rows.each(function(rowIndex) {
@@ -82,7 +84,7 @@ TableModel = (function($) {
     var staticFindCell = function(row, column) {
         return this.getTable().find(".row-" + row).find(".column-" + column);
     };
-    
+
     var defaultReadCellValue = function(cell) {
         if (cell.data("value") !== undefined) {
             return cell.data("value");
@@ -94,7 +96,7 @@ TableModel = (function($) {
         } else {
             return cell.text();
         }
-    };   
+    };
 
     var defaultSetCellValue = function(cell, value) {
         cell.data("value", value);
@@ -103,7 +105,7 @@ TableModel = (function($) {
         var precision = undefined
         if (this.options.precision !== undefined) {
             var precision = this.options.precision;
-        } 
+        }
         if (cell.data("precision") !== undefined) {
             var precision = cell.data("precision")
         }
@@ -117,7 +119,7 @@ TableModel = (function($) {
             cell.children("textarea").text(value);
         } else {
             cell.text(value);
-        }        
+        }
     };
 
     var onCellValueChange = function(row, column) {
@@ -137,20 +139,20 @@ TableModel = (function($) {
             if (expression.sourceSelection.includes(row, column)) {
                 applyHandler();
             }
-        }); 
-        applyHandler();       
+        });
+        applyHandler();
     };
 
     var defaultOptions = {
-        findCell : staticFindCell,
+        findCell: staticFindCell,
 
-        wireTableEvents : staticWireTableEvents,
+        wireTableEvents: staticWireTableEvents,
 
-        readCellValue : defaultReadCellValue,
+        readCellValue: defaultReadCellValue,
 
-        setCellValue : defaultSetCellValue,
+        setCellValue: defaultSetCellValue,
 
-        recalculateOnType : false
+        recalculateOnType: false
     };
 
     TableModel.prototype = {
@@ -159,7 +161,7 @@ TableModel = (function($) {
          *
          * It does not return underlying expression, just the value.
          */
-        get : function(row, column) {
+        get: function(row, column) {
             var cell = this.getCell.call(this, row, column);
             var value = this.options.readCellValue.call(this, cell);
             return value;
@@ -168,14 +170,14 @@ TableModel = (function($) {
         /**
          * Return the cell indexed by row and column.
          */
-        getCell : function(row, column) {
+        getCell: function(row, column) {
             return this.options.findCell.call(this, row, column);
         },
 
         /**
          * Assign a value or a dynamic expression to the cell.
          */
-        set : function(row, column, value) {
+        set: function(row, column, value) {
             var cell = this.options.findCell.call(this, row, column);
 
             if (isExpression(value)) {
@@ -204,40 +206,40 @@ TableModel = (function($) {
          * @param handler Function to be called. It should accept new value
          *     of the expression as parameter.
          */
-        listen : function(expression, handler) {
+        listen: function(expression, handler) {
             var tableModel = this;
             this.onCellChange(function(row, column) {
                 if (expression.sourceSelection.includes(row, column)) {
                     var value = evaluate(tableModel, expression);
                     handler(value);
                 }
-            });            
+            });
         },
 
         /** 
-          * Register handler, that gets called whenever cell value changes.
-          *
-          * The handler receives two parameters: row and column
-          */
-        onCellChange : function(listener) {
+         * Register handler, that gets called whenever cell value changes.
+         *
+         * The handler receives two parameters: row and column
+         */
+        onCellChange: function(listener) {
             addListener.call(this, "cell", listener);
         },
 
         /** 
-          * Register handler, that gets called whenever a cell in a column changes.
-          *
-          * The handler receives one parameter: column
-          */
-        onColumnChange : function(listener) {
+         * Register handler, that gets called whenever a cell in a column changes.
+         *
+         * The handler receives one parameter: column
+         */
+        onColumnChange: function(listener) {
             addListener.call(this, "column", listener);
         },
 
         /** 
-          * Register handler, that gets called whenever a cell in a row changes.
-          *
-          * The handler receives one paramater: row
-          */
-        onRowChange : function(listener) {
+         * Register handler, that gets called whenever a cell in a row changes.
+         *
+         * The handler receives one paramater: row
+         */
+        onRowChange: function(listener) {
             addListener.call(this, "row", listener);
         }
     };
@@ -250,13 +252,13 @@ TableModel = (function($) {
     };
 
     /**
-      * Interpret argument as a selection.
-      *
-      * Proper selections are left as-is.
-      * Arrays of pairs and a single pair are converted
-      *   to a collection of cells.
-      * Otherwise exception is thrown.
-      */
+     * Interpret argument as a selection.
+     *
+     * Proper selections are left as-is.
+     * Arrays of pairs and a single pair are converted
+     *   to a collection of cells.
+     * Otherwise exception is thrown.
+     */
     var asSelection = function(arg) {
         if (isSelection(arg)) {
             return arg;
@@ -264,11 +266,11 @@ TableModel = (function($) {
             var array = arg;
 
             if ((arg.length == 2) && !$.isArray(arg[0])) {
-                array = [ arg ];
+                array = [arg];
             }
 
             var selection = {
-                includes : function(row, column) {
+                includes: function(row, column) {
                     for (var i in array) {
                         if (array[i][0] == row && array[i][1] == column) {
                             return true;
@@ -276,10 +278,10 @@ TableModel = (function($) {
                     }
                     return false;
                 },
-                all : function() {
+                all: function() {
                     return array;
                 },
-                empty : function() {
+                empty: function() {
                     return !array.length;
                 }
             };
@@ -290,30 +292,30 @@ TableModel = (function($) {
     };
 
     /**
-      * Namespace of all cell selections.
-      *
-      * Selections are collections of cells that:
-      * - know if they are empty (method empty)
-      * - know if they include a specific cell (method includes)
-      * - know all their cells (method all)
-      *
-      * Any two (or more collections) can be combined
-      *     using Table.model.select.combine(selections...)
-      *
-      */ 
+     * Namespace of all cell selections.
+     *
+     * Selections are collections of cells that:
+     * - know if they are empty (method empty)
+     * - know if they include a specific cell (method includes)
+     * - know all their cells (method all)
+     *
+     * Any two (or more collections) can be combined
+     *     using Table.model.select.combine(selections...)
+     *
+     */
     TableModel.select = {
         /**
          * Empty selection.
          */
-        empty : function() {
+        empty: function() {
             var selection = {
-                includes : function() {
+                includes: function() {
                     return false;
                 },
-                all : function() {
+                all: function() {
                     return [];
                 },
-                empty : function() {
+                empty: function() {
                     return true;
                 }
             }
@@ -322,7 +324,7 @@ TableModel = (function($) {
         /**
          * Selection consisting of a single cell.
          */
-        cell : function(row, column) {
+        cell: function(row, column) {
             return asSelection([row, column]);
         },
 
@@ -332,29 +334,25 @@ TableModel = (function($) {
          * The coordinates are inclusive,
          *     e.g. right == left if a single column is selected.
          */
-        range : function(top, left, bottom, right) {
+        range: function(top, left, bottom, right) {
             var selection = {
-                includes : function(row, column) {
+                includes: function(row, column) {
                     result = (
-                        row >= top &&
-                        row <= bottom &&
-                        column >= left &&
-                        column <= right
-                    );
+                    row >= top && row <= bottom && column >= left && column <= right);
                     return result;
                 },
-                all : function() {
+                all: function() {
                     var indices = [];
                     for (i = top; i <= bottom; i++) {
                         for (j = left; j <= right; j++) {
                             indices.push([i, j]);
                         }
                     }
-                    return indices;            
+                    return indices;
                 },
-                empty : function() {
+                empty: function() {
                     return !((bottom - top) >= 0 && (right - left) >= 0);
-                }       
+                }
             };
             return selection;
         },
@@ -365,7 +363,7 @@ TableModel = (function($) {
          * Any number of selections or cell [row,column] pairs
          *     can be supplied.
          */
-        combine : function() {
+        combine: function() {
             var selections = [];
 
             if (arguments.length == 1 && $.isArray(arguments[0])) {
@@ -382,7 +380,7 @@ TableModel = (function($) {
             });
 
             var selection = {
-                includes : function(row, column) {
+                includes: function(row, column) {
                     for (var index in selections) {
                         if (selections[index].includes(row, column)) {
                             return true;
@@ -390,14 +388,14 @@ TableModel = (function($) {
                     }
                     return false;
                 },
-                all : function() {
+                all: function() {
                     var indices = [];
                     for (var index in selections) {
                         indices = indices.concat(selections[index].all())
                     }
                     return indices;
                 },
-                empty : function() {
+                empty: function() {
                     return !selections.length;
                 }
             }
@@ -413,21 +411,21 @@ TableModel = (function($) {
     }
 
     /**
-      * Evaluate an expression.
-      *
-      * @param tableModel Model has to be supplied because expressions
-      *     don't store information about able in themselves.
-      * @param expression Evaluate an expression starting with its
-      *     arguments that can be expressions as well.
-      *
-      * It also sets expression.tableModel, so that tableModel
-      * can be use in the expression handler.
-      */
+     * Evaluate an expression.
+     *
+     * @param tableModel Model has to be supplied because expressions
+     *     don't store information about able in themselves.
+     * @param expression Evaluate an expression starting with its
+     *     arguments that can be expressions as well.
+     *
+     * It also sets expression.tableModel, so that tableModel
+     * can be use in the expression handler.
+     */
     var evaluate = function(tableModel, expression) {
         expression.tableModel = tableModel;
 
         var values = [];
-        $.each (expression.args, function(index, arg) {
+        $.each(expression.args, function(index, arg) {
             var value;
             if (isExpression(arg)) {
                 value = evaluate(tableModel, arg);
@@ -477,34 +475,34 @@ TableModel = (function($) {
     var asNumber = function(value) {
         var number = parseFloat(value);
         if (number == value) {
-            return number;       
+            return number;
         } else {
             return 0;
         }
     };
 
     /**
-      * Default options for expression constructor.
-      * 
-      * They are overridden using options argument of the constructor.
-      */
+     * Default options for expression constructor.
+     *
+     * They are overridden using options argument of the constructor.
+     */
     var defaultExpressionOptions = {
         flatten: false
     }
 
     /**
-      * Base constructor of all expressions.
-      * 
-      * @param args - all arguments passed to the expression
-      * @param evaluateFunction
-      * @param options - various options
-      *
-      * Options (see defaultExpression options):
-      *   - flatten - when evaluating arguments, make a single array
-      *     out of all argument values (default: false)
-      *
-      * Exported as TableModel.expression.Base.
-      */
+     * Base constructor of all expressions.
+     *
+     * @param args - all arguments passed to the expression
+     * @param evaluateFunction
+     * @param options - various options
+     *
+     * Options (see defaultExpression options):
+     *   - flatten - when evaluating arguments, make a single array
+     *     out of all argument values (default: false)
+     *
+     * Exported as TableModel.expression.Base.
+     */
     var Expression = function(args, evaluateFunction, options) {
         this.args = args;
         this.sourceSelection = findExpressionSourceSelection(this);
@@ -514,18 +512,18 @@ TableModel = (function($) {
     };
 
     /**
-      * Namespace with all pre-defined expressions.
-      *
-      * Also shortcut as TableModel.e.
-      * If you want to implement a custom expression, use TableModel.expression.Base.
-      */
+     * Namespace with all pre-defined expressions.
+     *
+     * Also shortcut as TableModel.e.
+     * If you want to implement a custom expression, use TableModel.expression.Base.
+     */
     TableModel.expression = {
-        Base : Expression,
+        Base: Expression,
 
         /**
-          * Sum of a selection or values.
-          */
-        sum : function() {
+         * Sum of a selection or values.
+         */
+        sum: function() {
             return new Expression(arguments, function(values) {
                 var result = 0;
                 $.each(values, function(index, value) {
@@ -537,7 +535,7 @@ TableModel = (function($) {
             });
         },
 
-        product : function() {
+        product: function() {
             return new Expression(arguments, function(values) {
                 var result = 1;
                 $.each(values, function(index, value) {
@@ -549,7 +547,7 @@ TableModel = (function($) {
             });
         },
 
-        countIf : function(selection, condition) {
+        countIf: function(selection, condition) {
             return new Expression([selection], function(values) {
                 var count = 0;
                 $.each(values, function(index, item) {
@@ -567,16 +565,16 @@ TableModel = (function($) {
 
         /**
          * Map sourcevalues => targetvalues using handler.
-         * 
-         * @param selection Selection or an array of values 
-         * @param function(value, [row, column], tableModel) handler 
+         *
+         * @param selection Selection or an array of values
+         * @param function(value, [row, column], tableModel) handler
          *   There are no limitation for the handler, it can be a generic function.
          * @return Array converted values as array
          *
          * If the first parameter is a selection, handler
          * receives row & column parameters as well.
          */
-        map : function(selection, handler) {
+        map: function(selection, handler) {
             return new Expression([selection], function(values) {
                 var result = [];
                 var tableModel = this.tableModel;
