@@ -46,8 +46,6 @@ TableModel = (function($) {
         var $table = this.getTable();
         var tableModel = this;
 
-        // console.log($table);
-
         var rows = getRows($table);
         rows.each(function(rowIndex) {
             var $row = $(this);
@@ -61,24 +59,18 @@ TableModel = (function($) {
             });
         });
 
-        $table.on("change", "td input, td textarea", function() {
+        var eventToListen = this.options.recalculateOnType ? "input" : "change";
+        $table.on(eventToListen, "td input, td textarea", function() {
             var $input = $(this);
             var $cell = $input.closest("td, th");
             var row = $cell.data("row");
             var column = $cell.data("column");
-            $cell.data("value", $input.val());
+
+            var newValue = $input.val();
+            $cell.data("value", newValue);
+
             onCellValueChange.call(tableModel, row, column);
         });
-
-        if (this.options.recalculateOnType) {
-            $table.on("keyup", "td input, td textarea", function() {
-                var $input = $(this);
-                var $cell = $input.closest("td, th");
-                if ($input.val() != $cell.data("value")) {
-                    $input.trigger("change");
-                }
-            });
-        }
     };
 
     var staticFindCell = function(row, column) {
@@ -102,7 +94,7 @@ TableModel = (function($) {
         cell.data("value", value);
 
         // Use precision if set
-        var precision = undefined
+        var precision = undefined;
         if (this.options.precision !== undefined) {
             var precision = this.options.precision;
         }
