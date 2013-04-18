@@ -18,6 +18,7 @@ How to bind expressions
 Options
 -------
 * precision - number of digits after decimal point
+* recalculateOnType - if true, recalculation occurs instantenously ("input" event)
 
 Cell modifiers
 --------------
@@ -39,4 +40,4 @@ Available from namespaces TableModel.expression or TableModel.e
 
 * sum(arg1, arg2, arg3, ...) - arguments can be numbers, expressions, selections
 * product(arg1, arg2, arg3, ...) - arguments can be numbers, expressions, selections
-* countIf(selection, condition) - condition can be 
+* countIf(selection, condition)

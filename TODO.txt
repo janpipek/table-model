@@ -1,2 +1,3 @@
 * Support for <select>
 * Support for IE (recalculateOnType)
+* Document implementation
