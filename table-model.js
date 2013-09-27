@@ -53,7 +53,9 @@ TableModel = (function($) {
             $row.data("row", rowIndex);
             $row.children("td, th").each(function(columnIndex) {
                 var $cell = $(this);
-                $cell.addClass("column-" + columnIndex);
+                // Mark all table cells 
+                // TODO: work with colspans and rowspans
+                $cell.addClass("column-" + columnIndex + " row-" + rowIndex);
                 $cell.data("row", rowIndex);
                 $cell.data("column", columnIndex);
             });
