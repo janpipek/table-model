@@ -42,7 +42,18 @@ TableModel = (function($) {
         }
     };
 
-    var labelCells = function($table) {
+    /**
+      * Label cells with 0-based row & column indexes
+      *
+      * @param bool omitClass - unless true, add row-N & column-N
+      *     class where applicable.
+      * @param bool omitData - unless true, add row & column
+      *     jQuery data.
+      *
+      * Note that TableModel needs the classes for getting cell
+      * values.
+      */
+    var labelCells = function($table, omitClass, omitData) {
         // Handling of indexes blocked by col-/rowspan
         rowSpanBlocked = [];
         var block = function(row, column) {
@@ -55,8 +66,9 @@ TableModel = (function($) {
 
         getRows($table).each(function(rowIndex) {
             var $row = $(this);
-            $row.addClass("row-" + rowIndex);
-            $row.data("row", rowIndex);
+            if (!omitClass) $row.addClass("row-" + rowIndex);
+            if (!omitData) $row.data("row", rowIndex);
+            
             var columnIndex = 0;
             $row.children("td, th").each(function() {
                 // Find coords not conflicting with col/rowspan
@@ -72,9 +84,13 @@ TableModel = (function($) {
                 }
 
                 var $cell = $(this);
-                $cell.addClass("column-" + columnIndex + " row-" + rowIndex);
-                $cell.data("row", rowIndex);
-                $cell.data("column", columnIndex);
+                if (!omitClass) {
+                    $cell.addClass("column-" + columnIndex + " row-" + rowIndex);
+                }
+                if (!omitData) {
+                    $cell.data("row", rowIndex);
+                    $cell.data("column", columnIndex);
+                }
                 var colSpan = parseInt($cell.attr("colspan")) || 1;
                 var rowSpan = parseInt($cell.attr("rowspan")) || 1;
                 if (rowSpan > 1) {
