@@ -126,4 +126,46 @@
 			});
 		});	
 	</script>
+
+	<h3>Cell Indexing</h3>
+
+	<table id="cell-indexing" border="1">
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td rowspan="2"></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td colspan="2"></td>
+			<td></td>
+		</tr>
+
+		<tr>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+
+	</table>
+
+	<script>
+		$(function() {
+			var $table = $("table#cell-indexing");
+			TableModel.labelCells($table);
+
+			$table.find("td").each(function() {
+				var $td = $(this);
+				var coords = "" + $td.data("row") + ", " + $td.data("column");
+				$td.html(coords)
+			});
+		});
+	</script>
 </body>

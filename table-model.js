@@ -42,24 +42,56 @@ TableModel = (function($) {
         }
     };
 
+    var labelCells = function($table) {
+        // Handling of indexes blocked by col-/rowspan
+        rowSpanBlocked = [];
+        var block = function(row, column) {
+            var coord = "" + row + "-" + column;
+            /* if (rowSpanBlocked.indexOf(coord) >= 0) {
+                throw "colspan & rowspan covering the same cell";
+            }*/
+            rowSpanBlocked.push(coord);
+        }
+
+        getRows($table).each(function(rowIndex) {
+            var $row = $(this);
+            $row.addClass("row-" + rowIndex);
+            $row.data("row", rowIndex);
+            var columnIndex = 0;
+            $row.children("td, th").each(function() {
+                // Find coords not conflicting with col/rowspan
+                while(true) {
+                    var coord = "" + rowIndex + "-" + columnIndex;
+                    var index = rowSpanBlocked.indexOf(coord);
+                    if (index >= 0) {
+                        // rowSpanBlocked.splice(index, 1);
+                        columnIndex++;
+                    } else {
+                        break;
+                    }
+                }
+
+                var $cell = $(this);
+                $cell.addClass("column-" + columnIndex + " row-" + rowIndex);
+                $cell.data("row", rowIndex);
+                $cell.data("column", columnIndex);
+                var colSpan = parseInt($cell.attr("colspan")) || 1;
+                var rowSpan = parseInt($cell.attr("rowspan")) || 1;
+                if (rowSpan > 1) {
+                    for (var i = 1; i < rowSpan; i++) {
+                        block(rowIndex+i, columnIndex);
+                    }
+                }
+                columnIndex += colSpan;
+            });
+        })
+    };
+
     var staticWireTableEvents = function() {
         var $table = this.getTable();
         var tableModel = this;
 
-        var rows = getRows($table);
-        rows.each(function(rowIndex) {
-            var $row = $(this);
-            $row.addClass("row-" + rowIndex);
-            $row.data("row", rowIndex);
-            $row.children("td, th").each(function(columnIndex) {
-                var $cell = $(this);
-                // Mark all table cells 
-                // TODO: work with colspans and rowspans
-                $cell.addClass("column-" + columnIndex + " row-" + rowIndex);
-                $cell.data("row", rowIndex);
-                $cell.data("column", columnIndex);
-            });
-        });
+        labelCells($table);
 
         var eventToListen = this.options.recalculateOnType ? "input" : "change";
         $table.on(eventToListen, "td input, td textarea", function() {
@@ -242,6 +274,9 @@ TableModel = (function($) {
      * Check if argument behaves (duck-typing) like a selection.
      */
     var isSelection = function(arg) {
+        if (arg === undefined) {
+            throw "Invalid selection-like object.";
+        }
         return (arg.all && arg.includes);
     };
 
@@ -281,7 +316,7 @@ TableModel = (function($) {
             };
             return selection;
         } else {
-            throw "asSelection: argument cannot be interpreted as selection";
+            throw "asSelection: argument cannot be interpreted as selection.";
         }
     };
 
@@ -595,6 +630,9 @@ TableModel = (function($) {
     // Shortcuts
     TableModel.s = TableModel.select;
     TableModel.e = TableModel.expression;
+
+    // Export functions
+    TableModel.labelCells = labelCells;
 
     // Make it a jQuery plugin
     $.fn.tableModel = function(options) {
