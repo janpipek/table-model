@@ -186,9 +186,13 @@ TableModel = (function($) {
          * Returns the current value of the cell.
          *
          * It does not return underlying expression, just the value.
+         * Returns undefined if cell does not exist.
          */
         get: function(row, column) {
             var cell = this.getCell.call(this, row, column);
+            if (!cell ) {
+                return undefined;
+            }
             var value = this.options.readCellValue.call(this, cell);
             return value;
         },
@@ -461,7 +465,10 @@ TableModel = (function($) {
             } else if (isSelection(arg)) {
                 value = [];
                 $.each(arg.all(), function(i, cellIndex) {
-                    value.push(tableModel.get(cellIndex[0], cellIndex[1]));
+                    var cellVal = tableModel.get(cellIndex[0], cellIndex[1])
+                    if (cellVal !== undefined) {
+                        value.push(cellVal);
+                    }
                 });
             } else {
                 value = arg;
@@ -580,6 +587,7 @@ TableModel = (function($) {
             return new Expression([selection], function(values) {
                 var count = 0;
                 $.each(values, function(index, item) {
+                    item = "" + item; // Force it to be string
                     if (condition instanceof RegExp && item.match(condition)) {
                         count++;
                     } else if (condition == item) {
