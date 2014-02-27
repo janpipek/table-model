@@ -564,7 +564,7 @@ TableModel = (function($) {
     };
 
     /**
-     * Namespace with all pre-defined expressions.
+     * Namespace with pre-defined expressions.
      *
      * Also shortcut as TableModel.e.
      * If you want to implement a custom expression, use TableModel.expression.Base.
@@ -587,6 +587,9 @@ TableModel = (function($) {
             });
         },
 
+        /**
+          * Product of a selection or values.
+          */
         product: function() {
             return new Expression(arguments, function(values) {
                 var result = 1;
@@ -599,6 +602,13 @@ TableModel = (function($) {
             });
         },
 
+        /**
+          * Count all values satisfying a condition.
+          * 
+          * @param condition Can be a value or a Regexp
+          *   - Regexp is checked for matching
+          *   - value is checked for simple ==equality
+          */
         countIf: function(selection, condition) {
             return new Expression([selection], function(values) {
                 var count = 0;
