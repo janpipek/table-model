@@ -17,6 +17,11 @@ TableModel = (function($) {
         this.columnListeners = [];
 
         this.options.wireTableEvents.call(this);
+
+        if (this.options.cachingEnabled) {
+            this.cache = [];
+        }
+
         $table.data("table-model", this);
     };
 
@@ -119,7 +124,7 @@ TableModel = (function($) {
             var newValue = $input.val();
             $cell.data("value", newValue);
 
-            onCellValueChange.call(tableModel, row, column);
+            onCellValueChange.call(tableModel, row, column, newValue);
         });
     };
 
@@ -164,7 +169,13 @@ TableModel = (function($) {
         }
     };
 
-    var onCellValueChange = function(row, column) {
+    var onCellValueChange = function(row, column, value) {
+        if (this.cache) {
+            if (!this.cache[row]) {
+                this.cache[row] = [];
+            }
+            this.cache[row][column] = value;
+        }
         callListeners.call(this, "cell", [row, column]);
         callListeners.call(this, "row", [row]);
         callListeners.call(this, "column", [column]);
@@ -173,9 +184,12 @@ TableModel = (function($) {
     var bindExpression = function(tableModel, cell, row, column, expression) {
         var selection = expression.sourceSelection
         var applyHandler = function() {
-            var value = evaluate(tableModel, expression);
-            tableModel.options.setCellValue.call(tableModel, cell, value);
-            onCellValueChange.call(tableModel, row, column);
+            var originalValue = tableModel.get(row, column);
+            var newValue = evaluate(tableModel, expression);
+            if (originalValue !== newValue) {
+                tableModel.options.setCellValue.call(tableModel, cell, newValue);
+                onCellValueChange.call(tableModel, row, column, newValue);
+            }
         };
         tableModel.onCellChange(function(row, column) {
             if (expression.sourceSelection.includes(row, column)) {
@@ -194,7 +208,9 @@ TableModel = (function($) {
 
         setCellValue: defaultSetCellValue,
 
-        recalculateOnType: false
+        recalculateOnType: false,
+
+        cachingEnabled: true
     };
 
     TableModel.prototype = {
@@ -205,11 +221,24 @@ TableModel = (function($) {
          * Returns undefined if cell does not exist.
          */
         get: function(row, column) {
+            // Try to read from cache
+            if (this.cache) {
+                if (this.cache[row] && this.cache[row][column] !== undefined) {
+                    return this.cache[row][column];
+                }
+            }
             var cell = this.getCell.call(this, row, column);
             if (!cell ) {
                 return undefined;
             }
             var value = this.options.readCellValue.call(this, cell);
+            // Store value in cache (if viable)
+            if (this.cache) {
+                if (!this.cache[row]) {
+                    this.cache[row] = [];
+                }
+                this.cache[row][column] = value;
+            }
             return value;
         },
 
@@ -235,7 +264,7 @@ TableModel = (function($) {
                 var originalValue = this.options.readCellValue.call(this, cell);
                 if (value !== originalValue) {
                     this.options.setCellValue.call(this, cell, value);
-                    onCellValueChange.call(this, row, column);
+                    onCellValueChange.call(this, row, column, value);
                     return true;
                 } else {
                     return false;
@@ -506,7 +535,6 @@ TableModel = (function($) {
         var selections = [];
         $.each(expression.args, function(index, arg) {
             if (isSelection(arg)) {
-                // console.log(arg.all());
                 selections.push(arg);
             } else if (isExpression(arg)) {
                 var selection = arg.sourceSelection;

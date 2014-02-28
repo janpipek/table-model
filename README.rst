@@ -19,6 +19,8 @@ Options
 -------
 * precision - number of digits after decimal point
 * recalculateOnType - if true, recalculation occurs instantenously ("input" event)
+* cachingEnabled - if true, an array of table values is kept as data model,
+	otherwise, the values are always read from the cells (default: true)
 
 Cell modifiers
 --------------
