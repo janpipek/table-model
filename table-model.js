@@ -36,6 +36,9 @@ TableModel = (function($) {
         }
     };
 
+    /** 
+      * Get all rows (including those in thead, tbody, tfoot).
+      */ 
     var getRows = function($table) {
         if ($table.has("thead, tbody")) {
             var trs = $table.children("thead:not(.tableFloatingHeader)").children("tr");
