@@ -21,10 +21,10 @@ Options
 -------
 * precision - number of digits after decimal point (default: undefined)
 * recalculateOnType - if true, recalculation occurs instantenously, on "input" event (default: false)
-* cachingEnabled - if true, an array of table values is kept as data model,
-	otherwise, the values are always read from the cells (default: true)
+* cachingEnabled - if true, an array of table values is kept as data model, otherwise, the values are always read from the cells (default: true)
 
 Advanced options (see code):
+
 * valueParser
 * setCellValue
 * readCellValue
