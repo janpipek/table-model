@@ -320,7 +320,7 @@ TableModel = (function($) {
             if (value) {
                 return value.replace(",", ".");
             } else {
-                return null;
+                return value;
             }
         },
 
