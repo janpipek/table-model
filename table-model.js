@@ -162,6 +162,7 @@ TableModel = (function($) {
         }
         if (precision !== undefined) {
             value = value.toFixed(precision);
+            if (value == "-0.00") value = 0.00;
         }
 
         if (cell.has("input").length) {
