@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2013 Jan Pipek (jan.pipek@gmail.com)
+ * Copyright (C) 2013-4 Jan Pipek (jan.pipek@gmail.com)
  *
  * See https://github.com/janpipek/table-model
  *
@@ -51,7 +51,7 @@ TableModel = (function($) {
     };
 
     /**
-      * Label cells with 0-based row & column indexes
+      * Label cells with 0-based row & column indexes.
       *
       * @param bool omitClass - unless true, add row-N & column-N
       *     class where applicable.
@@ -125,6 +125,7 @@ TableModel = (function($) {
             var column = $cell.data("column");
 
             var newValue = $input.val();
+            newValue = tableModel.options.valueParser(newValue, $cell);
             $cell.data("value", newValue);
 
             onCellValueChange.call(tableModel, row, column, newValue);
@@ -202,20 +203,6 @@ TableModel = (function($) {
         applyHandler();
     };
 
-    var defaultOptions = {
-        findCell: staticFindCell,
-
-        wireTableEvents: staticWireTableEvents,
-
-        readCellValue: defaultReadCellValue,
-
-        setCellValue: defaultSetCellValue,
-
-        recalculateOnType: false,
-
-        cachingEnabled: true
-    };
-
     TableModel.prototype = {
         /**
          * Returns the current value of the cell.
@@ -235,6 +222,7 @@ TableModel = (function($) {
                 return undefined;
             }
             var value = this.options.readCellValue.call(this, cell);
+            value = this.options.valueParser(value);
             // Store value in cache (if viable)
             if (this.cache) {
                 if (!this.cache[row]) {
@@ -320,6 +308,51 @@ TableModel = (function($) {
         onRowChange: function(listener) {
             addListener.call(this, "row", listener);
         }
+    };
+
+    // Parser functions for cells
+    TableModel.valueParsers = {
+        default : function(value, $cell) {
+            return value;
+        },
+
+        commaAsDot : function(value, $cell) {
+            if (value) {
+                return value.replace(",", ".");
+            } else {
+                return null;
+            }
+        },
+
+        /**
+         * Chain two parsers together.
+         *
+         * @param outerParser A function that will be called on the intermediate step.
+         * @param innerParser A function that will be called first.
+         * @return A combined parser.
+         */
+        chain : function(outerParser, innerParser) {
+            var newParser = function(value, $cell) {
+                return outerParser(innerParser(value, $cell));
+            };
+            return newParser;
+        }
+    };
+
+    var defaultOptions = {
+        findCell: staticFindCell,
+
+        wireTableEvents: staticWireTableEvents,
+
+        readCellValue: defaultReadCellValue,
+
+        valueParser: TableModel.valueParsers.default,
+
+        setCellValue: defaultSetCellValue,
+
+        recalculateOnType: false,
+
+        cachingEnabled: true
     };
 
     /**

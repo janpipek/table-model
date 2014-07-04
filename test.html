@@ -91,7 +91,7 @@
 			for (var i = 1; i < max; i++) {
 				var $tr = $("<tr>");
 				var $td = $("<td>");
-				$td.append($("<input value='" + i + "'/>"));
+				$td.append($("<input value='" + i + ",5'/>"));
 				$tr.append($td);
 
 				for (var j = 1; j < max; j++) {
@@ -107,13 +107,17 @@
 			$table.append($foot);
 
 			$("body").append("<h3>Editable multiplication table</h3>");
+			$("body").append("<p>Shows support for treating commas as dots.</p>");
 			$("body").append($table);
 
 			var s = $.fn.tableModel.select;
 			var e = $.fn.tableModel.expression;	
 
 			// Call as plugin methods
-			var tableModel = $table.tableModel({ precision: 2}).data("tableModel");
+			var tableModel = $table.tableModel({
+				precision: 2,
+				valueParser: $.fn.tableModel.valueParsers.commaAsDot,
+			}).data("tableModel");
 			for (var i = 1; i < max; i++) {
 				for (var j = 1; j < max; j++) {
 					tableModel.set(i, j, e.product(s.cell(i, 0), s.cell(0, j)));
