@@ -123,10 +123,9 @@
 					tableModel.set(i, j, e.product(s.cell(i, 0), s.cell(0, j)));
 				}
 			}
-			tableModel.set(max, 1, e.product(e.sum(s.range(1, 1, max-1, max-1)), 2));
+			tableModel.set(max, max-1, e.sum(s.range(1, 1, max-1, max-1)));
 			tableModel.listen(e.sum(s.range(1, 1, max-1, max-1)), function(value) {
-				console.log(tableModel.getTable());
-				console.log("Double of the total sum: " + value);
+				console.log("Total multiplication table sum: " + value);
 			});
 		});	
 	</script>
